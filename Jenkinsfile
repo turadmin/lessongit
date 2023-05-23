@@ -1,15 +1,25 @@
 pipeline {
     agent any
-
+    
     stages {
         stage('Build') {
             steps {
-                docker build -t turadmin/devops:job1 .
+                script {
+                    def dockerImage = docker.build('turadmin/devops:job1')
+                    docker.withRegistry('https://registry.hub.docker.com', 'turadmin') {
+                        dockerImage.push()
+                    }
+                }
             }
         }
-        stage('Push') {
-            steps {
-                docker push turadmin/devops:job1 .
+    }
+    
+    post {
+        always {
+            script {
+                docker.image('turadmin/devops:job1').withRegistry {
+                    dockerImage.remove()
+                }
             }
         }
     }
