@@ -1,20 +1,24 @@
 pipeline {
     agent any
-    
+
     environment {
-        DOCKER_REGISTRY = "https://registry.hub.docker.com"
-        DOCKER_CREDENTIALS = "turadmin"
+        dockerhubUsername = 'turadmin'
+        dockerhubPassword = '75458811qQ'
     }
-    
+
     stages {
         stage('Build and Push Docker Image') {
             steps {
-                script {
-                    docker.withRegistry(DOCKER_REGISTRY, DOCKER_CREDENTIALS) {
-                        def customImage = docker.build("turadmin/devops:job1")
-                        customImage.push()
-                    }
-                }
+                sh '''
+                    # Сборка Docker-образа
+                    docker build -t turadmin/devops:job1 .
+
+                    # Вход в Docker Hub с использованием заданных данных
+                    echo "$dockerhubPassword" | docker login -u "$dockerhubUsername" --password-stdin
+
+                    # Выгрузка Docker-образа в Docker Hub
+                    docker push turadmin/devops:job1
+                '''
             }
         }
     }
